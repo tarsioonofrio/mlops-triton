@@ -1,0 +1,1 @@
+docker run --rm -p8000:8000 -p8001:8001 -p8002:8002 --shm-size=1g --ulimit memlock=-1 --ulimit stack=67108864 -v "$HOME"/private/server/docs/examples/model_repository:/models nvcr.io/nvidia/tritonserver:20.12-py3 tritonserver --model-repository=/models
