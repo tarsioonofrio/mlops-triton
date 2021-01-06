@@ -26,11 +26,13 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import argparse
-import numpy as np
-from PIL import Image
 import sys
 from functools import partial
 import os
+from types import SimpleNamespace
+
+import numpy as np
+from PIL import Image
 
 import tritonclient.grpc as grpcclient
 import tritonclient.grpc.model_config_pb2 as mc
@@ -203,7 +205,7 @@ def parse_model_http(model_metadata, model_config):
         w = input_metadata['shape'][3 if input_batch_dim else 2]
 
     return (max_batch_size, input_metadata['name'], output_metadata['name'], c,
-            h, w, input_config['format'], input_metadata['datatype'])
+            h, w,  ['format'], input_metadata['datatype'])
 
 
 def preprocess(img, format, dtype, c, h, w, scaling, protocol):
@@ -327,7 +329,7 @@ if __name__ == '__main__':
     parser.add_argument('-m',
                         '--model-name',
                         type=str,
-                        required=True,
+                        # required=True,
                         help='Name of model')
     parser.add_argument(
         '-x',
@@ -375,6 +377,30 @@ if __name__ == '__main__':
                         default=None,
                         help='Input image / Input folder.')
     FLAGS = parser.parse_args()
+
+    # Enable verbose output
+    FLAGS.verbose = True
+    # Use asynchronous inference API
+    FLAGS.async_set = False
+    # Use streaming inference API. The flag is only available with gRPC protocol.
+    FLAGS.streaming = False
+    # Name of model
+    FLAGS.model_name = ''
+    # Version of model. Default is to use latest version.
+    FLAGS.model_version = ''
+    # Batch size. Default is 1.
+    FLAGS.batch_size = 1
+    # Number of class results to report. Default is 1.
+    FLAGS.classes = 1
+    # Type of scaling to apply to image pixels. Default is NONE.
+    FLAGS.scaling = 'NONE'
+    # Inference server URL. Default is localhost:8000.
+    FLAGS.url = 'localhost:8000'
+    # 'Protocol (HTTP/gRPC) used to communicate with the inference service. Default is HTTP.
+    FLAGS.protocol = 'HTTP'
+    # Input image / Input folder.
+    FLAGS.image_filename = None
+
 
     if FLAGS.streaming and FLAGS.protocol.lower() != "grpc":
         raise Exception("Streaming is only allowed with gRPC protocol")
