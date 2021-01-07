@@ -4,7 +4,9 @@ from PIL import Image
 
 from tritonhttpclient import InferenceServerClient, InferInput
 
-filename = "/workspace/images/mug.jpg"
+# if run in docker container
+# filename = "/workspace/images/mug.jpg"
+filename = "../server/qa/images/mug.jpg"
 model_name = "densenet_onnx"
 
 triton_client = InferenceServerClient("localhost:8000")

@@ -109,11 +109,11 @@ def parse_model_grpc(model_metadata, model_config):
     if len(input_metadata.shape) != expected_input_dims:
         raise Exception(
             "expecting input to have {} dimensions, model '{}' input has {}".
-            format(expected_input_dims, model_metadata.name,
-                   len(input_metadata.shape)))
+                format(expected_input_dims, model_metadata.name,
+                       len(input_metadata.shape)))
 
     if ((input_config.format != mc.ModelInput.FORMAT_NCHW) and
-        (input_config.format != mc.ModelInput.FORMAT_NHWC)):
+            (input_config.format != mc.ModelInput.FORMAT_NHWC)):
         raise Exception("unexpected input format " +
                         mc.ModelInput.Format.Name(input_config.format) +
                         ", expecting " +
@@ -187,11 +187,11 @@ def parse_model_http(model_metadata, model_config):
     if len(input_metadata['shape']) != expected_input_dims:
         raise Exception(
             "expecting input to have {} dimensions, model '{}' input has {}".
-            format(expected_input_dims, model_metadata['name'],
-                   len(input_metadata['shape'])))
+                format(expected_input_dims, model_metadata['name'],
+                       len(input_metadata['shape'])))
 
     if ((input_config['format'] != "FORMAT_NCHW") and
-        (input_config['format'] != "FORMAT_NHWC")):
+            (input_config['format'] != "FORMAT_NHWC")):
         raise Exception("unexpected input format " + input_config['format'] +
                         ", expecting FORMAT_NCHW or FORMAT_NHWC")
 
@@ -205,7 +205,7 @@ def parse_model_http(model_metadata, model_config):
         w = input_metadata['shape'][3 if input_batch_dim else 2]
 
     return (max_batch_size, input_metadata['name'], output_metadata['name'], c,
-            h, w,  ['format'], input_metadata['datatype'])
+            h, w, input_config['format'], input_metadata['datatype'])
 
 
 def preprocess(img, format, dtype, c, h, w, scaling, protocol):
@@ -279,7 +279,6 @@ def postprocess(results, output_name, batch_size, batching):
 
 
 def requestGenerator(batched_image_data, input_name, output_name, dtype, FLAGS):
-
     # Set the input data
     inputs = []
     if FLAGS.protocol.lower() == "grpc":
@@ -325,7 +324,7 @@ if __name__ == '__main__':
                         required=False,
                         default=False,
                         help='Use streaming inference API. ' +
-                        'The flag is only available with gRPC protocol.')
+                             'The flag is only available with gRPC protocol.')
     parser.add_argument('-m',
                         '--model-name',
                         type=str,
@@ -370,7 +369,7 @@ if __name__ == '__main__':
                         required=False,
                         default='HTTP',
                         help='Protocol (HTTP/gRPC) used to communicate with ' +
-                        'the inference service. Default is HTTP.')
+                             'the inference service. Default is HTTP.')
     parser.add_argument('image_filename',
                         type=str,
                         nargs='?',
@@ -379,13 +378,15 @@ if __name__ == '__main__':
     FLAGS = parser.parse_args()
 
     # Enable verbose output
-    FLAGS.verbose = True
+    FLAGS.verbose = False
     # Use asynchronous inference API
     FLAGS.async_set = False
     # Use streaming inference API. The flag is only available with gRPC protocol.
     FLAGS.streaming = False
     # Name of model
     FLAGS.model_name = ''
+    # FLAGS.model_name = "densenet_onnx"
+    FLAGS.model_name = "inception_graphdef"
     # Version of model. Default is to use latest version.
     FLAGS.model_version = ''
     # Batch size. Default is 1.
@@ -393,14 +394,15 @@ if __name__ == '__main__':
     # Number of class results to report. Default is 1.
     FLAGS.classes = 1
     # Type of scaling to apply to image pixels. Default is NONE.
-    FLAGS.scaling = 'NONE'
+    # FLAGS.scaling = 'NONE'
+    FLAGS.scaling = 'INCEPTION'
     # Inference server URL. Default is localhost:8000.
     FLAGS.url = 'localhost:8000'
     # 'Protocol (HTTP/gRPC) used to communicate with the inference service. Default is HTTP.
     FLAGS.protocol = 'HTTP'
     # Input image / Input folder.
     FLAGS.image_filename = None
-
+    FLAGS.image_filename = "../server/qa/images/mug.jpg"
 
     if FLAGS.streaming and FLAGS.protocol.lower() != "grpc":
         raise Exception("Streaming is only allowed with gRPC protocol")
